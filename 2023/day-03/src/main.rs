@@ -8,7 +8,7 @@ mod advent {
     }
 
     impl<'a> Engine<'a> {
-        pub fn get_contained_symbol(&self, _idxs: &Vec<usize>) -> (bool, Option<usize>) {
+        pub fn get_contained_symbol(&self, _idxs: &Vec<usize>) -> Option<usize> {
             let idxs = self.get_idxs_with_diagonals(_idxs);
 
             let up = self.check_up(&idxs);
@@ -16,44 +16,46 @@ mod advent {
             let right = self.check_right(&idxs);
             let left = self.check_left(&idxs);
 
-            if up.0 {
+            if let Some(_) = up {
                 return up;
-            } else if down.0 {
+            }
+            if let Some(_) = down {
                 return down;
-            } else if left.0 {
+            }
+            if let Some(_) = left {
                 return left;
-            } else if right.0 {
+            }
+            if let Some(_) = right {
                 return right;
             }
-
-            (false, None)
+            None
         }
 
-        fn check_line<F>(&self, idxs: &Vec<usize>, operation: F) -> (bool, Option<usize>)
+        fn check_line<F>(&self, idxs: &Vec<usize>, operation: F) -> Option<usize>
         where
             F: Fn(&usize, usize) -> Option<usize>,
         {
             for idx in idxs {
                 if let Some(desire_idx) = operation(idx, self.num_columns) {
                     if let Some(_) = self.map.get(desire_idx) {
-                        let result = self.get_symbol(desire_idx);
-                        if result.0 {
-                            return result;
+                        match self.get_symbol(desire_idx) {
+                            Some(symbol) => return Some(symbol),
+                            None => (),
                         }
                     }
                 }
             }
-            (false, None)
+            None
         }
 
-        fn get_symbol(&self, idx: usize) -> (bool, Option<usize>) {
+        fn get_symbol(&self, idx: usize) -> Option<usize> {
             if let Some(byte) = self.map.get(idx) {
                 let ch = *byte as char;
                 if !ch.is_numeric() && ch != '.' {
-                    return (true, Some(idx));
+                    return Some(idx);
                 }
             }
-            (false, None)
+            None
         }
 
         fn get_idxs_with_diagonals(&self, idxs: &Vec<usize>) -> Vec<usize> {
@@ -72,31 +74,28 @@ mod advent {
             diagonals_idxs
         }
 
-        fn check_up(&self, idxs: &Vec<usize>) -> (bool, Option<usize>) {
+        fn check_up(&self, idxs: &Vec<usize>) -> Option<usize> {
             self.check_line(idxs, |a, b| a.checked_sub(b))
         }
 
-        fn check_down(&self, idxs: &Vec<usize>) -> (bool, Option<usize>) {
+        fn check_down(&self, idxs: &Vec<usize>) -> Option<usize> {
             self.check_line(idxs, |a, b| a.checked_add(b))
         }
 
-        fn check_side(&self, idxs: &Vec<usize>, idx: usize) -> (bool, Option<usize>) {
+        fn check_side(&self, idxs: &Vec<usize>, idx: usize) -> Option<usize> {
             let idx = *idxs.get(idx).unwrap();
 
             if let Some(_) = self.map.get(idx) {
-                let result = self.get_symbol(idx);
-                if result.0 {
-                    return result;
-                }
+                return self.get_symbol(idx);
             }
-            (false, None)
+            None
         }
 
-        fn check_right(&self, idxs: &Vec<usize>) -> (bool, Option<usize>) {
+        fn check_right(&self, idxs: &Vec<usize>) -> Option<usize> {
             self.check_side(idxs, 1)
         }
 
-        fn check_left(&self, idxs: &Vec<usize>) -> (bool, Option<usize>) {
+        fn check_left(&self, idxs: &Vec<usize>) -> Option<usize> {
             self.check_side(idxs, 0)
         }
     }
@@ -132,7 +131,7 @@ fn part_1(input: &str) -> usize {
         } else {
             if idxs.len() > 0 {
                 let number = get_number(&idxs, &map);
-                if engine.get_contained_symbol(&idxs).0 {
+                if let Some(_) = engine.get_contained_symbol(&idxs) {
                     sum += number;
                 }
             }
@@ -162,14 +161,11 @@ fn part_2(input: &str) -> usize {
         } else {
             if idxs.len() > 0 {
                 let number = get_number(&idxs, &map);
-                let result = engine.get_contained_symbol(&idxs);
-                if result.0 {
-                    if let Some(idx_symbol) = result.1 {
-                        connected
-                            .entry(idx_symbol)
-                            .and_modify(|v| v.push(number))
-                            .or_insert(vec![number]);
-                    }
+                if let Some(idx_symbol) = engine.get_contained_symbol(&idxs) {
+                    connected
+                        .entry(idx_symbol)
+                        .and_modify(|v| v.push(number))
+                        .or_insert(vec![number]);
                 }
             }
             idxs.clear();
