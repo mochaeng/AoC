@@ -51,7 +51,6 @@ fn part_1(input: &str) -> usize {
         .collect();
 
     let races_records: Vec<(usize, usize)> = times
-        .clone()
         .into_iter()
         .zip(distances.clone().into_iter())
         .collect();
