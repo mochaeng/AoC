@@ -1,2 +1,3 @@
-# AoC
-Advent of Code - 2022
+# AoC - Advent of Code
+
+My attempts at solving Advent of Code puzzles, organized by year.
