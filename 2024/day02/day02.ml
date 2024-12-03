@@ -34,12 +34,12 @@ let is_report_safe arr =
 ;;
 
 let is_report_safe_with_dampener arr =
-  let can_ben_safe arr =
+  let can_be_safe arr =
     Array.existsi arr ~f:(fun pos _ ->
       let subarr = Array.filteri arr ~f:(fun idx _ -> idx <> pos) in
       is_report_safe subarr)
   in
-  is_report_safe arr || can_ben_safe arr
+  is_report_safe arr || can_be_safe arr
 ;;
 
 let count_safe_reports lines ~f =
