@@ -46,6 +46,41 @@ let is_print_in_order values table =
   loop values
 ;;
 
+(*
+   worth reading:
+   https://www.reddit.com/r/adventofcode/comments/1h7mm3w/2024_day_05_part_2_how_nice_is_the_input_a_binary/
+*)
+let sort_with_rules rules values =
+  let precedes x y rules =
+    match Hashtbl.find rules x with
+    | Some values -> List.mem values y ~equal:Int.equal
+    | None -> false
+  in
+  List.sort values ~compare:(fun a b ->
+    match a, b with
+    | a, b when a = b -> 0
+    | a, b when precedes a b rules -> -1
+    | _ -> 1)
+;;
+
+let get_middle_value lst = List.nth_exn lst (List.length lst / 2)
+
+let part_2 lines =
+  let rules, prints = split_on_empty lines in
+  let rules_table = get_rules_table rules in
+  let all_print_values = get_all_prints_values prints in
+  List.fold_left
+    ~init:0
+    ~f:(fun acc print_values ->
+      if not (is_print_in_order print_values rules_table)
+      then (
+        let sorted = sort_with_rules rules_table print_values in
+        let middle = get_middle_value sorted in
+        acc + middle)
+      else acc)
+    all_print_values
+;;
+
 let part_1 lines =
   let rules, prints = split_on_empty lines in
   let rules_table = get_rules_table rules in
@@ -64,7 +99,8 @@ let part_1 lines =
 let solve filename =
   let content = In_channel.read_all filename in
   let lines = String.split_lines content in
-  printf "\nPart 1: %d\n" @@ part_1 lines
+  printf "\nPart 1: %d\n" @@ part_1 lines;
+  printf "\nPart 2: %d\n" @@ part_2 lines
 ;;
 
 let () = solve "input.txt"
