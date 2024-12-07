@@ -3,26 +3,12 @@ open Base
 
 module RecordedDirection = struct
   module T = struct
-    type t = int * int * char [@@deriving sexp_of, compare, show]
-
-    let hash = Hashtbl.hash
+    type t = int * int * char [@@deriving sexp_of, compare, show, hash]
   end
 
   include T
   include Comparable.Make (T)
 end
-
-let print_grid grid ~f =
-  printf "\n";
-  let rows = Array.length grid in
-  for i = 0 to rows - 1 do
-    let cols = Array.length grid.(i) in
-    for j = 0 to cols - 1 do
-      f grid.(i).(j)
-    done;
-    printf "\n"
-  done
-;;
 
 let make_grid_from grid ~default =
   Array.make_matrix ~dimx:(Array.length grid) ~dimy:(Array.length grid.(0)) default
@@ -48,7 +34,6 @@ let get_elem grid ~idxs:(i, j) =
 ;;
 
 let find_guard_idx grid =
-  let open Base in
   let arrows = [ '^'; 'v'; '>'; '<' ] in
   Array.find_mapi grid ~f:(fun i row ->
     Array.find_mapi row ~f:(fun j ch ->
@@ -72,7 +57,9 @@ let turn_position_90_deg_right = function
 ;;
 
 let has_cycle grid =
-  let recorded_directions = Hash_set.create (module RecordedDirection) ~size:128 in
+  let recorded_directions =
+    Hash_set.create (module RecordedDirection) ~growth_allowed:true ~size:22500
+  in
   let rec loop ~idxs:(cur_i, cur_j) ~arrow:cur_arrow =
     let new_direction = cur_i, cur_j, cur_arrow in
     if Hash_set.mem recorded_directions new_direction
